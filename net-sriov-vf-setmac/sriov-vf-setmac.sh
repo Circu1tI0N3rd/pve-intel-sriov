@@ -5,19 +5,35 @@ if [ $# -lt 2 ]; then
 	exit 1
 fi
 
-inf=$1
+envfn=$1
 path=$2
 force=/bin/false
 
 if [ $# -eq 3 && "$3" = "-f" ]; then
 	force=/bin/true
 fi
-if [ -f ${path}/${inf}.conf ]; then
-	path=${path}/${inf}.conf
+if [ -f ${path}/${envfn}.conf ]; then
+	path=${path}/${envfn}.conf
 else
-	echo "No matching config file for interface ${inf}"
+	echo "No matching config file for interface with address ${envfn}"
 	exit 1
 fi
+
+# Find interface from MAC
+pfmac=${envfn//-/:}
+inf=
+# Find interface name from $pfmac
+for sysif in $(ls -1 /sys/class/net); do
+	if [ -f /sys/class/net/${sysif}/address -a -f /sys/class/net/${sysif}/addr_assign_type ]; then
+		if [ "$(cat /sys/class/net/${sysif}/address)" = "${pfmac}" ]; then
+			# check interface does not steal address from another (notably bridges)
+			if [ `cat /sys/class/net/${sysif}/addr_assign_type` -ne 3 ]; then
+				inf=${sysif}
+				break
+			fi
+		fi
+	fi
+done
 
 . $path
 
