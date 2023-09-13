@@ -124,3 +124,34 @@ blacklist ixgbevf
 ```
 
 Update initramfs and reboot.
+
+## Set MAC address for virtual functions
+
+By default, MAC address of the virtual function is randomly generated when active.  To enforce a MAC address for the virtual functions I have created a script and systemd service that executes before the VM autostart service.
+
+### Installation
+
+- Clone this repository
+- Make the script `sriov-vf-setmac.sh` executable (apply `755` or `+x`)
+- Copy the folder `net-sriov-vf-setmac` into `/etc`
+- Copy `net-sriov-vf-setmac@.service` into `/etc/systemd/system`
+- Reload systemd daemon (`systemctl daemon-reload`)
+- Create config file in `/etc/net-sriov-vf-setmac` using the interface name that has virtual functions as config file name, ends with `.conf` with the virtual functions to set MAC address and the respective MAC addresses to set
+- Active the service to start at startup: `systemctl enable net-sriov-vf-setmac@<interface-name>.service` where `<interface-name>` is the name of the aforementioned interface
+- Set the MAC address now: `systemctl start net-sriov-vf-setmac@<interface-name>.service`.  Note: only matching virtual functions with MAC address `00:00:00:00:00:00` are set.
+
+### Configuration file
+
+The configuration file names the interface that has virtual functions to which MAC address(es) will be set.  Within the configuration file are the set of virtual functions and their respective MAC address to which to apply.  The structure is as follow:
+```
+VFS=("VF1" "VF0" "VF2")
+
+VF1="00:11:22:33:44:55"
+VF2="11:22:33:AA:BB:CC"
+VF0="11:22:33:DD:EE:FF"
+```
+The array `VFS` contains a set of virtual functions to set MAC address.  Each string matches a represenative variable that contains the MAC address (e.g. `VF1`).  This configuration file is interpreted by the script as an environment file, providing the set and the MAC address(es) as environment variables to be filled into a standard command to set the MAC address.
+
+### Specifying MAC address of the physical function instead
+
+There exists an experimental script that use physical function MAC address to identify the interface instead of name.  To use it, clone this repository as usual, but switch the branch to `setmac_use_macaddr`; continue the install procedure above all the same except the cloning part, but name the configuration file with MAC address of the physical function instead in the form `00-00-00-00-00-00.conf` and use `00-00-00-00-00-00` as `<interface-name>` when calling the systemd service.
