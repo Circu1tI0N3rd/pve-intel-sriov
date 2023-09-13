@@ -1,0 +1,12 @@
+[Unit]
+Description=Set virtual function MAC address for SR-IOV supported interface.
+Requires=network.target
+After=network.target
+Before=pve-guests.service
+
+[Service]
+Type=oneshot
+ExecStart=/etc/net-sriov-vf-setmac/sriov-vf-setmac.sh %i /etc/net-sriov-vf-setmac
+
+[Install]
+WantedBy=multi-user.target
