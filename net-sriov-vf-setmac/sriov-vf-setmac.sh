@@ -42,7 +42,11 @@ maccurr=(`/usr/sbin/ip link show ${inf} | /usr/bin/grep "vf" | awk '{print $4}'`
 for VF in ${VFS[@]}; do
 	idx=`echo ${VF} | tr -d -c 0-9`
 	mac=${!VF}
-	if [ "${maccurr[$idx]}" = "${mac}" ]; then
+	
+	if [ -n "${mac}" ]; then
+		echo "Skip: Virtual function's MAC address is unspecified."
+		continue
+	elif [ "${maccurr[$idx]}" = "${mac}" ]; then
 		echo "Skip: Virtual function ${idx} MAC address is recent (${maccurr[$idx]})."
 		continue
 	elif [ "${maccurr[$idx]}" = "00:00:00:00:00:00" ]; then
