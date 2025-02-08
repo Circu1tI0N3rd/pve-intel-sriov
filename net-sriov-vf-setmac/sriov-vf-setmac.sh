@@ -9,7 +9,7 @@ envfn=$1
 path=$2
 force=/bin/false
 
-if [ $# -eq 3 && "$3" = "-f" ]; then
+if [[ $# -eq 3 && "$3" = "-f" ]]; then
 	force=/bin/true
 fi
 if [ -f ${path}/${envfn}.conf ]; then
@@ -43,7 +43,7 @@ for VF in ${VFS[@]}; do
 	idx=`echo ${VF} | tr -d -c 0-9`
 	mac=${!VF}
 	
-	if [ -n "${mac}" ]; then
+	if [ ! -n "${mac}" ]; then
 		echo "Skip: Virtual function's MAC address is unspecified."
 		continue
 	elif [ "${maccurr[$idx]}" = "${mac}" ]; then
